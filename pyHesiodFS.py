@@ -18,7 +18,7 @@ import os, stat, errno, time
 from syslog import *
 import fuse
 from fuse import Fuse
-from ConfigParser import RawConfigParser
+from configparser import RawConfigParser
 from collections import defaultdict
 
 import locker
@@ -235,16 +235,16 @@ class PyHesiodFS(Fuse):
     def getattr(self, path):
         st = MyStat()
         if path == '/':
-            st.st_mode = stat.S_IFDIR | 0755
+            st.st_mode = stat.S_IFDIR | 0o755
             st.st_gid = self._gid()
             st.st_nlink = 2
         elif path in self.files:
-            st.st_mode = stat.S_IFREG | 0444
+            st.st_mode = stat.S_IFREG | 0o444
             st.st_nlink = 1
             st.st_size = len(self.files[path])
         elif '/' not in path[1:]:
             if path[1:] not in self.negcache[self._uid()] and self.findLocker(path[1:]):
-                st.st_mode = stat.S_IFLNK | 0777
+                st.st_mode = stat.S_IFLNK | 0o777
                 st.st_uid = self._uid()
                 st.st_nlink = 1
                 st.st_size = len(self.findLocker(path[1:]))
@@ -346,8 +346,8 @@ def main():
     try:
         server.main()
     except fuse.FuseError as fe:
-        print >>sys.stderr, "An error occurred while starting PyHesiodFS:"
-        print >>sys.stderr, fe
+        print("An error occurred while starting PyHesiodFS:", file=sys.stderr)
+        print(fe, file=sys.stderr)
         sys.exit(1)
 
 if __name__ == '__main__':
